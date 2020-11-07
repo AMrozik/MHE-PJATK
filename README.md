@@ -1,9 +1,12 @@
-# Problem Sapera
+# Problem Sumy Podzbioru
 
-## Wejście
-Prostokątny diagram o wymiarach n × m opisany za pomocą dwóch znaków.
-Znak kropki oznacza wolne pole, a znak x, to mina.
+### Treść problemu:
+Mając dany skończony zbiór liczb całkowitych rozstrzygnąć,
+czy istnieje niepusty jego podzbiór sumujący się do zera.
+
+### Wejście:
+Podzbiór sumujący się do zera
 
 
-## Wyjście
+### Wyjście:
 Liczba rzeczywista opisująca jakość podanego rozwiązania
