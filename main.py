@@ -69,64 +69,6 @@ def next_solution(given_set, solution):
     return set(next_sol)
 
 
-# def negate_solution(given_set, solution):
-#     max_mask = bin(2 ** len(given_set) - 1)
-#     mask_length = len(given_set)
-#     mask = read_mask(given_set, solution)
-#
-#     # xor with all ones (0b11111) to negate mask
-#     negated_mask = bin(int(max_mask, 2) ^ int(mask, 2))[2:]
-#
-#     diff = mask_length - len(negated_mask)
-#
-#     negated_mask = str(negated_mask)
-#
-#     for i in range(diff):
-#         negated_mask = "0" + str(negated_mask)
-#
-#     # print("negated mask: ", negated_mask)
-#     negated_mask = str(negated_mask)
-#
-#     negated_sol = []
-#     list_set = list(given_set)
-#
-#     for i in range(mask_length):
-#         if negated_mask[i] == '1':
-#             negated_sol.append(list_set[i])
-#     # print("mask: ", prev_mask)
-#     return set(negated_sol)
-
-
-# def previous_solution(given_set, solution):
-#     max_mask = bin(2 ** len(given_set) - 1)
-#     mask_length = len(given_set)
-#     mask = read_mask(given_set, solution)
-#
-#     if int(mask, 2) <= 1:
-#         prev_mask = max_mask
-#     else:
-#         prev_mask = bin(int(mask, 2) - 1)
-#
-#     prev_mask = prev_mask[2:]
-#
-#     # fix mask - fill with zeros the oldest bits to max length
-#     diff = mask_length - len(prev_mask)
-#
-#     prev_mask = str(prev_mask)
-#
-#     for i in range(diff):
-#         prev_mask = "0" + str(prev_mask)
-#
-#     prev_sol = []
-#     list_set = list(given_set)
-#
-#     for i in range(mask_length):
-#         if prev_mask[i] == '1':
-#             prev_sol.append(list_set[i])
-#     # print("mask: ", prev_mask)
-#     return set(prev_sol)
-
-
 def generate_solution(given_set):
     mask_length = len(given_set)
     random_mask = ""
@@ -144,7 +86,6 @@ def generate_solution(given_set):
 
 
 def generate_solution_surroundings(given_set, solution):
-
     surroundings = []
     mask = list(read_mask(given_set, solution))
     list_set = list(given_set)   # zmieniam zbior na liste zeby latwiej iterowac
@@ -168,21 +109,6 @@ def generate_solution_surroundings(given_set, solution):
             surroundings.append(set(surr_sol))
     # print(surroundings)
     return surroundings
-
-    # for i, bit in enumerate(mask):
-    #     if bit == '0':
-    #         mask[i] = '1'
-    #     else:
-    #         mask[i] = '0'
-
-    # print(mask)
-
-    # next_sol = next_solution(given_set, solution)
-    # prev_sol = previous_solution(given_set, solution)
-    # neg_sol = negate_solution(given_set, solution)
-    # surroundings = [next_sol, next_solution(given_set, next_sol), prev_sol, previous_solution(given_set, prev_sol),
-    #                 neg_sol, next_solution(given_set, neg_sol), previous_solution(given_set, neg_sol)]
-    # return surroundings
 
 
 def goal_function(subset):
@@ -230,38 +156,61 @@ def hill_climb(given_set):
     return best_sol
 
 
+def tabu_search(given_set, max_interations, max_tabu_size):
+    solution = generate_solution(given_set)
+    best_score = goal_function(solution)
+    best_sol = solution
+    tabu_list = []
+    tabu_list.append(solution)
+
+    for i in range(max_interations):
+        surrounding = generate_solution_surroundings(given_set, best_sol)
+        bestCandidate = surrounding[0]
+        for candidate in surrounding:
+            if candidate not in tabu_list and goal_function(candidate) < goal_function(bestCandidate):
+                bestCandidate = candidate
+        if goal_function(bestCandidate) < goal_function(best_sol):
+            best_sol = bestCandidate
+        tabu_list.append(bestCandidate)
+        if len(tabu_list) > max_tabu_size:
+            tabu_list.pop()
+    return best_sol
+
+
 if __name__ == '__main__':
 
-    if len(sys.argv) > 2:
-        test_set_file = sys.argv[1]
-        solution_file = sys.argv[2]
-    else:
-        test_set_file = "the_killer_one.json"
-        solution_file = "solution.txt"
-
-    given_set = load_data("test sets/" + test_set_file)
-
-    choose = input("Wybierz metodę:\n1: Brute Force\n2: Algorytm wspinaczkowy\n:")
-
-    if choose == "1":
-        chosen_fun = brute_force_solution
-    elif choose == "2":
-        chosen_fun = hill_climb
-    else:
-        exit(2)
-
-    start_time = time.time()
-    solution = chosen_fun(given_set)
-    exec_time = time.time() - start_time
-    score = goal_function(solution)
-
-    print(f"Dany zbiór: {given_set}\nZnalezione rozwiązanie: {solution}\nCzas wykonania algorytmu: {exec_time}\n"
-          f"Wartość funkcji celu: {score}")
-    save_to_file(solution_file, given_set, solution, exec_time, score)
-
-    # given_set = load_data("test sets/the_killer_one.json")
+    # if len(sys.argv) > 2:
+    #     test_set_file = sys.argv[1]
+    #     solution_file = sys.argv[2]
+    # else:
+    #     test_set_file = "the_killer_one.json"
+    #     solution_file = "solution.txt"
+    #
+    # given_set = load_data("test sets/" + test_set_file)
+    #
+    # choose = input("Wybierz metodę:\n1: Brute Force\n2: Algorytm wspinaczkowy\n:3: Wyszukiwanie Tabu\n:")
+    #
+    # if choose == "1":
+    #     chosen_fun = brute_force_solution
+    # elif choose == "2":
+    #     chosen_fun = hill_climb
+    # elif choose == "3":
+    #     chosen_fun = tabu_search
+    # else:
+    #     exit(2)
+    #
     # start_time = time.time()
-    # solution = hill_climb(given_set)
+    # solution = chosen_fun(given_set)
     # exec_time = time.time() - start_time
-    # print(f"Dany zbiór: {given_set}\nZnalezione rozwiązanie: {solution}\nCzas wykonania algorytmu: {exec_time}\n "
-    #       f"Wartość funkcji celu: {goal_function(solution)}")
+    # score = goal_function(solution)
+    #
+    # print(f"Dany zbiór: {given_set}\nZnalezione rozwiązanie: {solution}\nCzas wykonania algorytmu: {exec_time}\n"
+    #       f"Wartość funkcji celu: {score}")
+    # save_to_file(solution_file, given_set, solution, exec_time, score)
+
+    given_set = load_data("test sets/the_killer_one.json")
+    start_time = time.time()
+    solution = tabu_search(given_set, 200, 10)
+    exec_time = time.time() - start_time
+    print(f"Dany zbiór: {given_set}\nZnalezione rozwiązanie: {solution}\nCzas wykonania algorytmu: {exec_time}\n "
+          f"Wartość funkcji celu: {goal_function(solution)}")
