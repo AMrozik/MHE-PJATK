@@ -2,6 +2,7 @@ import random
 import json
 import time
 import sys
+import os
 
 
 def join(list1):
@@ -13,7 +14,7 @@ def join(list1):
 
 def load_data(file_name):
     try:
-        with open(file_name, "r") as f:
+        with open("test sets/" + file_name, "r") as f:
             json_data = json.load(f)
             given_set = set(json_data)
             return given_set
@@ -129,14 +130,13 @@ def brute_force_solution(given_set):
     return best
 
 
-def hill_climb(given_set):
-    number_of_combinations = (2 ** len(given_set)) - 1
+def hill_climb(given_set, max_iterations):
     solution = generate_solution(given_set)
     best_score = goal_function(solution)
     best_sol = solution
     found_better = False
 
-    for i in range(number_of_combinations - 1):
+    for i in range(max_iterations):
         surrounding = generate_solution_surroundings(given_set, best_sol)
         for sol in surrounding:
             score = goal_function(sol)
@@ -144,10 +144,6 @@ def hill_climb(given_set):
                 found_better = True
                 best_sol = sol
                 best_score = score
-        # # # DEBUG # # #
-        print("i: ", i)
-        # print("best solution:", best_sol)
-        # print("best score: ", best_score)
         if best_score == 0:
             return best_sol
         if not found_better:
@@ -156,14 +152,13 @@ def hill_climb(given_set):
     return best_sol
 
 
-def tabu_search(given_set, max_interations, max_tabu_size):
+def tabu_search(given_set, max_iterations, max_tabu_size):
     solution = generate_solution(given_set)
-    best_score = goal_function(solution)
     best_sol = solution
     tabu_list = []
     tabu_list.append(solution)
 
-    for i in range(max_interations):
+    for i in range(max_iterations):
         surrounding = generate_solution_surroundings(given_set, best_sol)
         bestCandidate = surrounding[0]
         for candidate in surrounding:
@@ -173,7 +168,7 @@ def tabu_search(given_set, max_interations, max_tabu_size):
             best_sol = bestCandidate
         tabu_list.append(bestCandidate)
         if len(tabu_list) > max_tabu_size:
-            tabu_list.pop()
+            tabu_list.pop(0)
     return best_sol
 
 
@@ -183,7 +178,7 @@ if __name__ == '__main__':
     #     test_set_file = sys.argv[1]
     #     solution_file = sys.argv[2]
     # else:
-    #     test_set_file = "the_killer_one.json"
+    #     test_set_file = "32_items.json"
     #     solution_file = "solution.txt"
     #
     # given_set = load_data("test sets/" + test_set_file)
@@ -208,9 +203,54 @@ if __name__ == '__main__':
     #       f"Wartość funkcji celu: {score}")
     # save_to_file(solution_file, given_set, solution, exec_time, score)
 
-    given_set = load_data("test sets/the_killer_one.json")
-    start_time = time.time()
-    solution = tabu_search(given_set, 200, 10)
-    exec_time = time.time() - start_time
-    print(f"Dany zbiór: {given_set}\nZnalezione rozwiązanie: {solution}\nCzas wykonania algorytmu: {exec_time}\n "
-          f"Wartość funkcji celu: {goal_function(solution)}")
+    # given_set = load_data("test sets/22_items.json")
+    # start = time.time()
+    # solution = brute_force_solution(given_set)
+    # print(len(given_set))
+    # print("time: ", time.time() - start)
+    # print("solution: ", solution)
+    # print("goal function: ", goal_function(solution))
+
+    dir = os.listdir("test sets")
+    dir.sort()
+
+    sets = []
+    functions = [hill_climb, tabu_search]
+
+    for file in dir:
+        given_set = load_data(file)
+        sets.append(given_set)
+
+    print(sets)
+
+    with open("pomiary/hill_climb.txt", 'w') as f:
+        f.write("rozmiar czas wynik_sredni\n")
+        for problem in sets:
+            sredni_czas = 0
+            sredni_wynik = 0
+            for i in range(25):
+                start = time.time()
+                solution = hill_climb(problem, 100)
+                czas = time.time() - start
+                sredni_czas += czas
+                sredni_wynik += goal_function(solution)
+            rozmiar = len(problem)
+            sredni_czas /= 25
+            sredni_wynik /= 25
+            f.write(str(rozmiar)+ " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
+
+    with open("pomiary/tabu_search.txt", 'w') as f:
+        f.write("rozmiar czas wynik_sredni\n")
+        for problem in sets:
+            sredni_czas = 0
+            sredni_wynik = 0
+            for i in range(25):
+                start = time.time()
+                solution = hill_climb(problem, 100)
+                czas = time.time() - start
+                sredni_czas += czas
+                sredni_wynik += goal_function(solution)
+            rozmiar = len(problem)
+            sredni_czas /= 25
+            sredni_wynik /= 25
+            f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
