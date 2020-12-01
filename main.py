@@ -3,6 +3,8 @@ import json
 import time
 import sys
 import os
+from numpy.random import randint, uniform
+from numpy import exp, log
 
 
 def join(list1):
@@ -112,6 +114,32 @@ def generate_solution_surroundings(given_set, solution):
     return surroundings
 
 
+def random_neighbour(given_set, solution):
+    surroundings = []
+    mask = list(read_mask(given_set, solution))
+    list_set = list(given_set)   # zmieniam zbior na liste zeby latwiej iterowac
+    mask_length = len(given_set)
+
+    # zmieniam po jednym bicie w masce na przeciwny
+    for i in range(mask_length):
+        sol = mask[:]   # kopia oryginalnej maski
+        surr_sol = []   # wygenerowane rozwiazanie (podbior) na podstawie maski
+        if sol[i] == '0':
+            sol[i] = '1'
+        else:
+            sol[i] = '0'
+        # print(sol)
+        # generuje podzbior na podstawie maski
+        for x in range(mask_length):
+            if sol[x] == '1':
+                surr_sol.append(list_set[x])
+        # print(surr_sol)
+        if len(surr_sol) > 0:
+            surroundings.append(set(surr_sol))
+    # print(surroundings)
+    return surroundings[randint(0, len(surroundings))]
+
+
 def goal_function(subset):
     return abs(sum(subset))
 
@@ -172,6 +200,27 @@ def tabu_search(given_set, max_iterations, max_tabu_size):
     return best_sol
 
 
+def simulated_annealing(given_set, max_iterations):
+    V = []
+    s = generate_solution(given_set)
+    V.append(s)
+    for i in range(max_iterations):
+        new_s = random_neighbour(given_set, s)
+        if goal_function(new_s) <= goal_function(s):
+            s = new_s
+            V.append(s)
+        else:
+            u = uniform()
+            T = 1/i+1
+            if u < exp(-abs(goal_function(new_s) - goal_function(s))/T):
+                s = new_s
+                V.append(s)
+    return s
+
+
+
+
+
 if __name__ == '__main__':
 
     # if len(sys.argv) > 2:
@@ -211,46 +260,57 @@ if __name__ == '__main__':
     # print("solution: ", solution)
     # print("goal function: ", goal_function(solution))
 
-    dir = os.listdir("test sets")
-    dir.sort()
 
-    sets = []
-    # functions = [hill_climb, tabu_search]
 
-    for file in dir:
-        given_set = load_data(file)
-        sets.append(given_set)
 
-    # print(sets)
+    # program
 
-    with open("pomiary/hill_climb.txt", 'w') as f:
-        f.write("rozmiar czas wynik_sredni\n")
-        for problem in sets:
-            sredni_czas = 0
-            sredni_wynik = 0
-            for i in range(25):
-                start = time.time()
-                solution = hill_climb(problem, 100)
-                czas = time.time() - start
-                sredni_czas += czas
-                sredni_wynik += goal_function(solution)
-            rozmiar = len(problem)
-            sredni_czas /= 25
-            sredni_wynik /= 25
-            f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
+    # dir = os.listdir("test sets")
+    # dir.sort()
+    #
+    # sets = []
+    # # functions = [hill_climb, tabu_search]
+    #
+    # for file in dir:
+    #     given_set = load_data(file)
+    #     sets.append(given_set)
+    #
+    # # print(sets)
+    #
+    # with open("pomiary/hill_climb.txt", 'w') as f:
+    #     f.write("rozmiar czas wynik_sredni\n")
+    #     for problem in sets:
+    #         sredni_czas = 0
+    #         sredni_wynik = 0
+    #         for i in range(25):
+    #             start = time.time()
+    #             solution = hill_climb(problem, 100)
+    #             czas = time.time() - start
+    #             sredni_czas += czas
+    #             sredni_wynik += goal_function(solution)
+    #         rozmiar = len(problem)
+    #         sredni_czas /= 25
+    #         sredni_wynik /= 25
+    #         f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
+    #
+    # with open("pomiary/tabu_search.txt", 'w') as f:
+    #     f.write("rozmiar czas wynik_sredni\n")
+    #     for problem in sets:
+    #         sredni_czas = 0
+    #         sredni_wynik = 0
+    #         for i in range(25):
+    #             start = time.time()
+    #             solution = tabu_search(problem, 100, 20)
+    #             czas = time.time() - start
+    #             sredni_czas += czas
+    #             sredni_wynik += goal_function(solution)
+    #         rozmiar = len(problem)
+    #         sredni_czas /= 25
+    #         sredni_wynik /= 25
+    #         f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
 
-    with open("pomiary/tabu_search.txt", 'w') as f:
-        f.write("rozmiar czas wynik_sredni\n")
-        for problem in sets:
-            sredni_czas = 0
-            sredni_wynik = 0
-            for i in range(25):
-                start = time.time()
-                solution = tabu_search(problem, 100, 20)
-                czas = time.time() - start
-                sredni_czas += czas
-                sredni_wynik += goal_function(solution)
-            rozmiar = len(problem)
-            sredni_czas /= 25
-            sredni_wynik /= 25
-            f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
+    given_set = load_data("22_items.json")
+    solution = simulated_annealing(given_set, 100)
+    print(solution)
+    print(goal_function(solution))
+
