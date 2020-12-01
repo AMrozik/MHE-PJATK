@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 with open("pomiary/hill_climb.txt") as file:
     dane = csv.reader(file, delimiter=' ')
     next(dane)
-    rozmiary = []
-    czasy = []
+    rozmiary1 = []
+    czasy1 = []
     wyniki_srednie = []
     for row in dane:
-        rozmiary.append(row[0])
-        czasy.append(row[1])
-        wyniki_srednie.append(row[2])
+        rozmiary1.append(float(row[0]))
+        czasy1.append(float(row[1]))
+        wyniki_srednie.append(float(row[2]))
 
-plt.plot(rozmiary, czasy)
+# plt.plot(rozmiary, czasy)
 
 with open("pomiary/tabu_search.txt") as file:
     dane = csv.reader(file, delimiter=' ')
@@ -21,13 +21,17 @@ with open("pomiary/tabu_search.txt") as file:
     czasy = []
     wyniki_srednie = []
     for row in dane:
-        rozmiary.append(row[0])
-        czasy.append(row[1])
-        wyniki_srednie.append(row[2])
+        rozmiary.append(float(row[0]))
+        czasy.append(float(row[1]))
+        wyniki_srednie.append(float(row[2]))
 
-plt.plot(rozmiary, czasy)
+
+print(czasy)
+print(rozmiary)
+
+plt.plot(czasy)
 plt.show()
 
 
-plt.plot(wyniki_srednie, czasy)
+plt.plot(czasy, wyniki_srednie)
 plt.show()

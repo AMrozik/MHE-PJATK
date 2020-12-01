@@ -178,7 +178,7 @@ if __name__ == '__main__':
     #     test_set_file = sys.argv[1]
     #     solution_file = sys.argv[2]
     # else:
-    #     test_set_file = "32_items.json"
+    #     test_set_file = "30_items.json"
     #     solution_file = "solution.txt"
     #
     # given_set = load_data("test sets/" + test_set_file)
@@ -215,13 +215,13 @@ if __name__ == '__main__':
     dir.sort()
 
     sets = []
-    functions = [hill_climb, tabu_search]
+    # functions = [hill_climb, tabu_search]
 
     for file in dir:
         given_set = load_data(file)
         sets.append(given_set)
 
-    print(sets)
+    # print(sets)
 
     with open("pomiary/hill_climb.txt", 'w') as f:
         f.write("rozmiar czas wynik_sredni\n")
@@ -237,7 +237,7 @@ if __name__ == '__main__':
             rozmiar = len(problem)
             sredni_czas /= 25
             sredni_wynik /= 25
-            f.write(str(rozmiar)+ " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
+            f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
 
     with open("pomiary/tabu_search.txt", 'w') as f:
         f.write("rozmiar czas wynik_sredni\n")
@@ -246,7 +246,7 @@ if __name__ == '__main__':
             sredni_wynik = 0
             for i in range(25):
                 start = time.time()
-                solution = hill_climb(problem, 100)
+                solution = tabu_search(problem, 100, 20)
                 czas = time.time() - start
                 sredni_czas += czas
                 sredni_wynik += goal_function(solution)
