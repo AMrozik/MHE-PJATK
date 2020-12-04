@@ -200,25 +200,28 @@ def tabu_search(given_set, max_iterations, max_tabu_size):
     return best_sol
 
 
-def simulated_annealing(given_set, max_iterations):
+def simulated_annealing(given_set, max_iterations=1000, temperature_fun=lambda k: 0.1, verbose=False):
     V = []
     s = generate_solution(given_set)
     V.append(s)
-    for i in range(max_iterations):
+    for i in range(0, max_iterations):
         new_s = random_neighbour(given_set, s)
-        if goal_function(new_s) <= goal_function(s):
+        if goal_function(new_s) >= goal_function(s):
             s = new_s
             V.append(s)
         else:
             u = uniform()
-            T = 1/i+1
-            if u < exp(-abs(goal_function(new_s) - goal_function(s))/T):
+            try:
+                ep = exp(-abs(goal_function(new_s) - goal_function(s)) / temperature_fun(i))
+            except ZeroDivisionError:
+                continue
+            if u < ep:
                 s = new_s
                 V.append(s)
-    return s
-
-
-
+            # else:
+            #     V.append(V[-1])
+        if verbose: print("Iteratacja ", i, " : ", goal_function(s))
+    return min(V, key=goal_function)
 
 
 if __name__ == '__main__':
@@ -309,8 +312,9 @@ if __name__ == '__main__':
     #         sredni_wynik /= 25
     #         f.write(str(rozmiar) + " " + str(sredni_czas) + " " + str(sredni_wynik) + "\n")
 
-    given_set = load_data("22_items.json")
-    solution = simulated_annealing(given_set, 100)
+    iterations = 1000
+    given_set = load_data("50_items.json")
+    solution = simulated_annealing(given_set, iterations, lambda k: 1000 * iterations / k, True)
     print(solution)
     print(goal_function(solution))
 
